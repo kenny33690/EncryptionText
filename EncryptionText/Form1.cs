@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.IO;
+using EncryptionText.Crypto;
 
 namespace EncryptionText
 {
@@ -19,16 +20,6 @@ namespace EncryptionText
             InitializeComponent();
         }
 
-        private static byte[] genKeys(string key)
-        {
-            var data = Encoding.UTF8.GetBytes(key);
-            var _In = new byte[16] { 207, 63, 204, 71, 183, 48, 11, 223, 51, 176, 5, 227, 20, 237, 247, 218 };
-            for (int i = 0; i < data.Length; i++)
-            {
-                _In[i % 16] = (byte)(_In[i % 16] ^ data[i]);
-            }
-            return _In;
-        }
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -42,14 +33,15 @@ namespace EncryptionText
             if (fileName.Equals("")) return;
             if (fileName.EndsWith(".enc"))
             {
-                var aes = new AesDecryptor(fileName);
+                var aes = CryptoFactory.CreateCrypto(fileName, false);
                 aes.Decrypt(key);
 
                 return;
             }
 
-            AesEncryptor toAes = new AesEncryptor(fileName);
+            var toAes = CryptoFactory.CreateCrypto(fileName,true,"AES");
             toAes.Encrypt(key);
+
 
 #if false
             var parDir = Path.GetDirectoryName(fileName);
@@ -83,6 +75,11 @@ namespace EncryptionText
             //fs2.Close();
 #endif
 
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            //Console.WriteLine(AES.Method);
         }
     }
 }
