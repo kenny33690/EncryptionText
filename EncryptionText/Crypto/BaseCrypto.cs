@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Diagnostics;
 using EncryptionText.Crypto;
+using System.Reflection.Emit;
 
 namespace EncryptionText
 {
@@ -50,12 +51,7 @@ namespace EncryptionText
         /// </summary>
         public int BufferSize = 4096;
 
-        /// <summary>
-        /// 加密保存
-        /// </summary>
-        /// <param name="encFileName">保存后加密文件路径</param>
-        /// <param name="data">加密数据</param>
-        public void Save(string encFileName, List<string> data)
+        public Configuration BaseConf(string encFileName, List<string> data)
         {
             var conf = new Configuration();
             var sec1 = new Section("Conf");
@@ -75,6 +71,18 @@ namespace EncryptionText
             }
             conf.Add(sec1);
             conf.Add(sec2);
+
+            return conf;
+        }
+
+        /// <summary>
+        /// 加密保存
+        /// </summary>
+        /// <param name="encFileName">保存后加密文件路径</param>
+        /// <param name="data">加密数据</param>
+        public void Save(string encFileName, List<string> data)
+        {
+            var conf = BaseConf(encFileName, data);
 
             conf.SaveToFile(encFileName);
         }

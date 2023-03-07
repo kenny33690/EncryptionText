@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="Crypto\AesEncryptor.cs" />
     <Compile Include="Crypto\BaseCrypto.cs" />
+    <Compile Include="Crypto\RSA.cs" />
     <Compile Include="Crypto\Factory.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
