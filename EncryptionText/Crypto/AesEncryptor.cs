@@ -104,7 +104,7 @@ namespace EncryptionText.Crypto
                 if (i == Length - 1)
                 {
                     bw.Write(buffer, 0, SourceLength % BufferSize);
-                    return;
+                    break;
                 }
                 bw.Write(buffer);
                 bw.Flush();
@@ -147,21 +147,37 @@ namespace EncryptionText.Crypto
             return EncryptString(key, Encoding.UTF8.GetBytes(data));
         }
 
-        public static byte[] DecryptString(string key,byte[] data)
+        public static byte[] DecryptString(string key,string[] data)
         {
             var aes = Aes.Create();
             aes.Key = Utils.genKeys(key);
             aes.IV = Utils.genIVs(key);
+            aes.Padding = PaddingMode.None;
 
             var decTrans = aes.CreateDecryptor();
-            var outBuffer = new byte[data.Length];
-            decTrans.TransformBlock(data, 0, data.Length, outBuffer, 0);
+            var bufferSize = 4096;
+            var buffer = new byte[bufferSize];
+            var outBuffer = new byte[bufferSize];
+            var length = int.Parse(data[0]);
+            var pos = 0;
+            var out_data = new byte[length];
 
-            return outBuffer;
+            for (int i = 1; i < data.Length; i++)
+            {
+                var d1 = Convert.FromBase64String(data[i]);
+                d1.CopyTo(buffer, 0);
+                decTrans.TransformBlock(buffer,0, buffer.Length, outBuffer, 0);
+                if (i == data.Length - 1)
+                {
+                    Array.Copy(outBuffer, 0, out_data, pos, length%bufferSize);
+                    break;
+                }
+                Array.Copy(buffer, 0, out_data, pos, bufferSize);
+                pos += bufferSize;
+            }
+            return out_data;
         }
-        public static byte[] DecryptString(string key, string data)
-        {
-            return DecryptString(key,Convert.FromBase64String(data));
-        }
+
+
     }
 }

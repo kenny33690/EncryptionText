@@ -3,10 +3,10 @@ using SharpConfig;
 using System.IO;
 using System.Reflection;
 using System.Diagnostics;
-using EncryptionText.Crypto;
 using System.Reflection.Emit;
+using System;
 
-namespace EncryptionText
+namespace EncryptionText.Crypto
 {
     abstract class BaseCrypto
     {
@@ -80,19 +80,26 @@ namespace EncryptionText
         /// </summary>
         /// <param name="encFileName">保存后加密文件路径</param>
         /// <param name="data">加密数据</param>
-        public void Save(string encFileName, List<string> data)
+        public virtual void Save(string encFileName, List<string> data)
         {
             var conf = BaseConf(encFileName, data);
 
             conf.SaveToFile(encFileName);
         }
+        public virtual void Save()
+        {
+            Save(EncryptFileName, Data);
+        }
+
+        internal Configuration Config;
 
         /// <summary>
         /// 加载加密文件
         /// </summary>
-        public void Load()
+        public virtual void Load()
         {
             var conf = Configuration.LoadFromFile(EncryptFileName);
+            Config = conf;
             var sec1 = conf["Conf"];
             var sec2 = conf["Encrypt"];
 
@@ -118,6 +125,6 @@ namespace EncryptionText
         public abstract void Encrypt(string key);
         public abstract void Decrypt(string key);
 
-        public delegate BaseCrypto Constructor(string FileName,bool isEncrypt);
+        public delegate BaseCrypto Constructor(string FileName, bool isEncrypt);
     }
 }

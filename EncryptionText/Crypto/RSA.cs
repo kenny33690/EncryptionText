@@ -52,8 +52,52 @@ namespace EncryptionText.Crypto
 
         public override void Decrypt(string key)
         {
-            
-            throw new NotImplementedException();
+
+            string rsaKey;
+            if (!IsKey(key))
+            {
+                Load();
+                //rsaKey = GenKeys();
+                rsaKey = RsaKey;
+            }
+            else
+            {
+                base.Load();
+                rsaKey = key;
+            }
+            var fileName = SourceFileName;
+            var parDir = Path.GetDirectoryName(EncryptFileName);
+            var origin = Path.Combine(parDir,"origin_"+ Path.GetFileName(fileName));
+            var fs = new FileStream(origin, FileMode.Create);
+            var bw = new BinaryWriter(fs);
+            var buffer = new byte[BufferSize];
+
+
+            using (var rsa = new RSACryptoServiceProvider())
+            {
+                rsa.FromXmlString(rsaKey);
+
+                for (int i = 0; i < Length; i++)
+                {
+                    var baseByte = Convert.FromBase64String(Data[i]);
+
+                    var buf = rsa.Decrypt(baseByte, true);
+
+                    if (i == Length - 1)
+                    {
+                        bw.Write(buf, 0, SourceLength % BufferSize);
+                        break;
+                    }
+
+                    bw.Write(buf);
+                }
+
+
+            }
+            bw.Flush();
+            bw.Close();
+            fs.Close();
+
         }
 
         public override void Encrypt(string key)
@@ -105,10 +149,10 @@ namespace EncryptionText.Crypto
             IsHaveKey = flag;
             Key = key;
         }
-        private string RsaKey;
-        private string Key;
-        private bool IsHaveKey;
-        public void Save()
+        private string RsaKey = "";
+        private string Key = "";
+        private bool IsHaveKey = false;
+        public override void Save()
         {
             var encFileName = EncryptFileName;
             var data = Data;
@@ -137,6 +181,32 @@ namespace EncryptionText.Crypto
             }
             
 
+        }
+
+        public override void Load()
+        {
+            base.Load();
+            if (!IsHaveKey)
+            {
+                var secKey = Config["Key"];
+                var settingLen = secKey.Count();
+                var data = new string[settingLen];
+                for (int i = 0; i < settingLen; i++)
+                {
+                    data[i] = secKey[i].StringValue;
+                }
+
+                var @byte = AES.DecryptString(Key, data);
+                var rsaKey = Encoding.UTF8.GetString(@byte);
+                if (!IsKey(rsaKey))
+                {
+                    throw new CryptographicException("解密错误");
+                }
+                RsaKey = rsaKey;
+            }
+            
+
+            
         }
     }
 }
