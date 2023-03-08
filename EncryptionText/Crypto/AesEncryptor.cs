@@ -115,5 +115,53 @@ namespace EncryptionText.Crypto
             fs.Flush();
             fs.Close();
         }
+
+
+        public static string[] EncryptString(string key, byte[] data)
+        {
+            var aes = Aes.Create();
+            aes.Key = Utils.genKeys(key);
+            aes.IV = Utils.genIVs(key);
+            aes.Padding = PaddingMode.None;
+
+            var encTrans = aes.CreateEncryptor();
+            var buffer = new byte[4096];
+            var outBuffer = new byte[4096];
+            var dataLength = (int)Math.Ceiling(data.Length / 4096.0);
+            List<string> Data = new List<string>(dataLength+1);
+            Data.Add(data.Length.ToString());
+            var position = 0;
+            for (int i = 0; i < dataLength; i++)
+            {
+                data.CopyTo(buffer, position);
+                encTrans.TransformBlock(buffer, 0, buffer.Length, outBuffer, 0);
+                Data.Add(Convert.ToBase64String(outBuffer));
+                position += 4096;
+            }
+
+
+            return Data.ToArray();
+        }
+        public static string[] EncryptString(string key, string data)
+        {
+            return EncryptString(key, Encoding.UTF8.GetBytes(data));
+        }
+
+        public static byte[] DecryptString(string key,byte[] data)
+        {
+            var aes = Aes.Create();
+            aes.Key = Utils.genKeys(key);
+            aes.IV = Utils.genIVs(key);
+
+            var decTrans = aes.CreateDecryptor();
+            var outBuffer = new byte[data.Length];
+            decTrans.TransformBlock(data, 0, data.Length, outBuffer, 0);
+
+            return outBuffer;
+        }
+        public static byte[] DecryptString(string key, string data)
+        {
+            return DecryptString(key,Convert.FromBase64String(data));
+        }
     }
 }

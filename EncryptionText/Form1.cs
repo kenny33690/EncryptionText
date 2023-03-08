@@ -39,8 +39,9 @@ namespace EncryptionText
                 return;
             }
 
-            var toAes = CryptoFactory.CreateCrypto(fileName,true,"AES");
+            var toAes = (RSACrypto)CryptoFactory.CreateCrypto(fileName,true,"RSA");
             toAes.Encrypt(key);
+            toAes.Save();
 
 
 #if false

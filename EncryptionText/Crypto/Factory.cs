@@ -16,7 +16,7 @@ namespace EncryptionText.Crypto
         static CryptoFactory()
         {
             _crypto.Add("AES", new BaseCrypto.Constructor(AES.Create));
-
+            _crypto.Add("RSA", new BaseCrypto.Constructor(RSACrypto.Create));
         }
 
         public static void RegisterCrypto(string Method, BaseCrypto.Constructor func)
